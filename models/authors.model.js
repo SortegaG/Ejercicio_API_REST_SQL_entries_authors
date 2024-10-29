@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const queries = require('../queries/entries.queries.js') // Queries SQL
+const authorsQueries = require('../queries/authors.queries') // Queries SQL
 
 const pool = new Pool({
     host: 'localhost',
@@ -10,13 +10,13 @@ const pool = new Pool({
 });
 
 // GET
-const getEntriesByEmail = async (email) => {
+const getAuthorByEmail = async (email) => {
     let client, result;
     try {
         client = await pool.connect(); // Espera a abrir conexion
-        const data = await client.query(queries.getEntriesByEmail, [email])
-        result = data.rows
-
+        const data = await client.query(authorsQueries.getAuthorByEmail, [email])
+        result = data.rows; //devuelve las rows que corresponden al criterio email, en este caso rowcount nos devuelve 1, ya que solo hay un autor con ese email.
+        
     } catch (err) {
         console.log(err);
         throw err;
@@ -25,13 +25,12 @@ const getEntriesByEmail = async (email) => {
     }
     return result
 }
-
 // GET
-const getAllEntries = async () => {
+const getAllAuthors = async () => {
     let client, result;
     try {
         client = await pool.connect(); // Espera a abrir conexion
-        const data = await client.query(queries.getAllEntries)
+        const data = await client.query(authorsQueries.getAuthors)
         result = data.rows
     } catch (err) {
         console.log(err);
@@ -43,12 +42,12 @@ const getAllEntries = async () => {
 }
 
 // CREATE
-const createEntry = async (entry) => {
-    const { title, content, email, category } = entry;
+const createAuthor = async (author) => {
+    const { name, surname, email, image } = author;
     let client, result;
     try {
         client = await pool.connect(); // Espera a abrir conexion
-        const data = await client.query(queries.createEntry, [title, content, email, category])
+        const data = await client.query(authorsQueries.createAuthor, [name, surname, email, image])
         result = data.rowCount
     } catch (err) {
         console.log(err);
@@ -59,30 +58,15 @@ const createEntry = async (entry) => {
     return result
 }
 
-// DELETE
-const deleteEntry = async (entryToDelete) => {
-    const title = entryToDelete;
-    let client, result;
-    try {
-        client = await pool.connect();
-        const data = await client.query(queries.deleteEntryByTitle, [title]);
-        result = data.rowCount; // Devuelve la fila actualizada
-    } catch (err) {
-        console.log('Error to delete entry:', err);
-        throw err;
-    } finally {
-        client.release();
-    }
-    return result;
-};
+
 //UPDATE
-// FunciÃ³n para actualizar una entrada
-const updateEntry = async (updatedEntry, originalTitle) => {
-    const { title, content, category } = updatedEntry;
+// Función para actualizar una entrada
+const updateAuthor = async (updatedAuthor, originalname) => {
+    const { name, surname, email, image } = updatedAuthor;
     let client, result;
     try {
         client = await pool.connect();
-        const data = await client.query(queries.updateEntryByTitle, [title, content, category, originalTitle]);
+        const data = await client.query(authorsQueries.updateAuthorByName, [name, surname, email, image, originalname]);
         result = data.rowCount; // Devuelve la fila actualizada
     } catch (err) {
         console.log('Error updating entry:', err);
@@ -93,12 +77,29 @@ const updateEntry = async (updatedEntry, originalTitle) => {
     return result;
 };
 
+// DELETE
+const deleteAuthor = async (authorToDelete) => {
+    const author = authorToDelete;
+    let client, result;
+    try {
+        client = await pool.connect();
+        const data = await client.query(authorsQueries.deleteAuthorByName, [author]);
+        result = data.rowCount; // Devuelve la fila actualizada
+    } catch (err) {
+        console.log('Error to delete entry:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+    return result;
+};
+
 const entries = {
-    getEntriesByEmail,
-    getAllEntries,
-    createEntry,
-    deleteEntry,
-    updateEntry
+    getAuthorByEmail,
+    getAllAuthors,
+    createAuthor,
+    deleteAuthor,
+    updateAuthor
 }
 
 module.exports = entries;
@@ -106,8 +107,8 @@ module.exports = entries;
 
 // Pruebas
 
-    getEntriesByEmail("guillermu@thebridgeschool.es")
-    .then(data=>console.log(data)) 
+    // getEntriesByEmail("guillermu@thebridgeschool.es")
+    // .then(data=>console.log(data)) 
 
 
 
